@@ -1,4 +1,3 @@
-
 import numpy as np
 
 
@@ -10,14 +9,11 @@ def create_grid(rows=20, cols=20, obstacle_probability=0.2, seed=42):
     1 = obstacle
     """
 
-    # TODO 1: Create a random number generator using seed.
+    rng = np.random.default_rng(seed)
 
-    # TODO 2: Generate a grid with the given dimensions.
-    # Each cell should have the specified obstacle probability.
+    grid = (rng.random((rows, cols)) < obstacle_probability).astype(int)
 
-    # TODO 3: Make the starting cell (0, 0) free.
+    grid[0, 0] = 0
+    grid[rows - 1, cols - 1] = 0
 
-    # TODO 4: Make the goal cell (rows - 1, cols - 1) free.
-
-    # TODO 5: Return the grid.
-    pass
+    return grid
