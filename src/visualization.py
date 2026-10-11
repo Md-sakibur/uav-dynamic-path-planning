@@ -1,29 +1,38 @@
+
 import matplotlib.pyplot as plt
 
 
-def plot_grid(grid):
-    """
-    Display and save the UAV grid environment.
-
-    0 = free cell
-    1 = obstacle
-    """
+def plot_grid(grid, path=None, save_path="results/environment.png"):
+    """Display the grid and optionally draw an A* path."""
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
-    # Display free cells and obstacles.
     ax.imshow(grid, cmap="Greys", vmin=0, vmax=1)
 
-    # Mark the starting position.
+    # Draw the route before the start and goal markers.
+    if path:
+        path_rows = [point[0] for point in path]
+        path_cols = [point[1] for point in path]
+
+        ax.plot(
+            path_cols,
+            path_rows,
+            color="dodgerblue",
+            linewidth=2.5,
+            marker="o",
+            markersize=3,
+            label="A* Path",
+        )
+
     ax.scatter(
         0, 0,
         color="green",
         s=120,
+        edgecolors="black",
         label="Start",
-        edgecolors="black"
+        zorder=3,
     )
 
-    # Mark the goal position.
     goal_x = grid.shape[1] - 1
     goal_y = grid.shape[0] - 1
 
@@ -31,11 +40,12 @@ def plot_grid(grid):
         goal_x, goal_y,
         color="red",
         s=120,
+        edgecolors="black",
         label="Goal",
-        edgecolors="black"
+        zorder=3,
     )
 
-    ax.set_title("UAV Path Planning Environment")
+    ax.set_title("UAV A* Path Planning")
     ax.set_xlabel("Column")
     ax.set_ylabel("Row")
     ax.set_xticks(range(grid.shape[1]))
@@ -44,12 +54,5 @@ def plot_grid(grid):
     ax.legend()
 
     plt.tight_layout()
-
-    # Save the image before displaying it.
-    fig.savefig(
-        "results/environment.png",
-        dpi=200,
-        bbox_inches="tight"
-    )
-
+    fig.savefig(save_path, dpi=200, bbox_inches="tight")
     plt.show()
