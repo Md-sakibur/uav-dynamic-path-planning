@@ -1,346 +1,254 @@
+<div align="center">
 
+# UAV Dynamic Path Planning
 
-\# UAV Dynamic Path Planning and Obstacle Replanning
+**A* path planning · Dynamic obstacle replanning · Reproducible experiments**
 
+A Python simulation for studying how a UAV can plan a route through an obstacle-filled environment and replan as a controlled environment changes.
 
+<p>
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white" alt="Python 3.13" />
+  <img src="https://img.shields.io/badge/Planner-A%2A-2563EB" alt="A star planner" />
+  <img src="https://img.shields.io/badge/Experiments-20%20seeds-0F766E" alt="20 experiment seeds" />
+  <a href="https://github.com/Md-sakibur/uav-dynamic-path-planning/actions/workflows/tests.yml"><img src="https://github.com/Md-sakibur/uav-dynamic-path-planning/actions/workflows/tests.yml/badge.svg?branch=main" alt="Python tests" /></a>
+</p>
 
-A Python-based grid simulation for studying UAV path planning, obstacle avoidance, and route replanning in changing environments.
+<p>
+  <img src="results/dynamic_replanning.png" alt="UAV path replanning simulation with a moving obstacle" width="760" />
+</p>
 
+</div>
 
+---
 
-This project extends a static path-planning prototype with a controlled dynamic-obstacle simulation, automated tests, performance metrics, and reproducible multi-seed experiments.
+## Overview
 
+A route that is valid at the start of a mission may become unsuitable when the environment changes. This project explores that problem in a controlled, two-dimensional grid simulation.
 
+The simulator generates a seeded obstacle map, calculates an initial route using **A* search**, updates a simulated obstacle along positions on the original route, and repeatedly replans from the UAV's current grid position. It also records basic performance measures and supports batch experiments across multiple random seeds.
 
-> \*\*Project scope:\*\* This is a software simulation prototype. It does not yet implement real-drone control, sensor-based obstacle tracking, motion prediction under uncertainty, or physical flight validation.
+> **Scope and safety:** This is a grid-based software prototype. It is not a real-drone navigation system and does not implement sensor-based obstacle tracking, uncertain motion prediction, vehicle dynamics, or physical-flight validation.
 
+## At a glance
 
+| Component | Current implementation |
+|---|---|
+| Environment | Seeded 2D grid with static blocked cells |
+| Planner | A* with Manhattan-distance heuristic |
+| Movement | Four-connected grid moves; one move per step |
+| Dynamic scenario | One simulated obstacle advances along positions from the initial route |
+| Replanning | A* is rerun from the current UAV cell at each simulation step |
+| Evaluation | Success, path length, planning time, replanning count, collision count |
+| Batch experiments | 20 seeds: 42 through 61 |
+| Automated tests | 6 tests in the current suite |
 
-\## Objectives
+## Visual results
 
+### 1. Environment generation
 
+The environment is a 20 × 20 grid by default. A cell is either free or blocked; the start and goal cells are kept free.
 
-\- Generate reproducible 2D environments containing static obstacles.
+<p align="center">
+  <img src="results/environment.png" alt="Generated grid environment showing obstacles, start and goal" width="680" />
+</p>
 
-\- Find routes using the A\* search algorithm.
+### 2. Initial A* route
 
-\- Simulate an obstacle changing position along an original route.
+A* searches for a route from the upper-left start to the lower-right goal without entering blocked cells.
 
-\- Replan from the UAV's current grid position as the simulated environment changes.
+<p align="center">
+  <img src="results/astar_path.png" alt="A star route through the obstacle grid" width="680" />
+</p>
 
-\- Measure route length, planning time, replanning frequency, success, and simulated collisions.
+### 3. Replanning after an obstacle blocks the route
 
-\- Evaluate the simulator over multiple random seeds.
+This earlier controlled example places an obstacle on the original route and calculates an alternative path.
 
+<p align="center">
+  <img src="results/replanned_path.png" alt="Alternative path after the original route is blocked" width="680" />
+</p>
 
+### 4. Multi-step obstacle updates
 
-\## Features
+The multi-step simulation changes the obstacle position over successive steps and recalculates a route from the UAV's current location.
 
+<p align="center">
+  <img src="results/dynamic_replanning.png" alt="Final state of the dynamic replanning simulation" width="680" />
+</p>
 
+### 5. Batch experiment charts
 
-\- \*\*Grid environment:\*\* Configurable dimensions and obstacle probability.
+<p align="center">
+  <img src="results/experiment_success.png" alt="Simulation success by random seed" width="720" />
+</p>
 
-\- \*\*A\* path planning:\*\* Four-directional movement with Manhattan-distance heuristic.
+<p align="center">
+  <img src="results/experiment_path_length.png" alt="Executed path length by seed" width="48%" />
+  <img src="results/experiment_planning_time.png" alt="Measured A star planning time by seed" width="48%" />
+</p>
 
-\- \*\*Obstacle-triggered replanning:\*\* Recalculate a route when the simulated obstacle changes position.
+Raw observations for each attempted seed are stored in [`results/experiment_results.csv`](results/experiment_results.csv). Additional implementation details and interpretation are in [`docs/experiment_notes.md`](docs/experiment_notes.md).
 
-\- \*\*Visualization:\*\* Display obstacles, UAV route, start, goal, and moving-obstacle position.
+## How it works
 
-\- \*\*Performance metrics:\*\* Record path lengths, planning calls, execution time, replanning count, and collision count.
+1. **Generate a map.** Create a grid using a specified random seed and obstacle probability.
+2. **Plan a route.** Use A* to search from the start to the goal.
+3. **Update the scenario.** Place the simulated obstacle at a new candidate position along the original path.
+4. **Replan.** Run A* again from the UAV's current cell against the updated grid.
+5. **Record metrics.** Measure the route length, number of planning/replanning calls, planning time, success, and simulated collisions.
+6. **Repeat.** Run the process across a set of random seeds and write results to CSV.
 
-\- \*\*Batch experiments:\*\* Run multiple seeded scenarios and export results to CSV.
-
-\- \*\*Automated tests:\*\* Verify basic pathfinding, blocked environments, metrics, and one dynamic-simulation scenario.
-
-
-
-\## Technologies
-
-
-
-\- Python
-
-\- NumPy
-
-\- Matplotlib
-
-\- pytest
-
-\- Git and GitHub
-
-
-
-\## Project Structure
-
-
-
-```text
-
-uav-dynamic-path-planning/
-
-├── src/
-
-│   ├── \_\_init\_\_.py
-
-│   ├── environment.py
-
-│   ├── astar.py
-
-│   ├── simulation.py
-
-│   ├── metrics.py
-
-│   └── visualization.py
-
-├── tests/
-
-│   ├── test\_astar.py
-
-│   ├── test\_metrics.py
-
-│   └── test\_simulation.py
-
-├── experiments/
-
-│   └── run\_experiments.py
-
-├── results/
-
-│   ├── environment.png
-
-│   ├── astar\_path.png
-
-│   ├── dynamic\_replanning.png
-
-│   ├── experiment\_results.csv
-
-│   ├── experiment\_success.png
-
-│   ├── experiment\_path\_length.png
-
-│   └── experiment\_planning\_time.png
-
-├── docs/
-
-├── main.py
-
-├── requirements.txt
-
-├── README.md
-
-└── .gitignore
-
+### A* heuristic
+
+The implementation uses Manhattan distance, appropriate for four-directional movement with unit-cost steps:
+
+\[
+h(n)=|r_n-r_g|+|c_n-c_g|
+\]
+
+A* prioritizes nodes according to the known cost so far plus the heuristic estimate:
+
+\[
+f(n)=g(n)+h(n)
+\]
+
+### Architecture
+
+```mermaid
+flowchart TD
+    ENV[Grid environment] --> ASTAR[A* planner]
+    ASTAR --> SIM[Dynamic simulation]
+    SIM --> METRICS[Performance metrics]
+    SIM --> VIZ[Visualization]
+    EXP[Batch experiment runner] --> SIM
+    EXP --> CSV[CSV results]
+    EXP --> CHARTS[Experiment charts]
+    TESTS[pytest suite] -. verifies .-> ASTAR
+    TESTS -. verifies .-> METRICS
+    TESTS -. smoke-tests .-> SIM
 ```
 
+## Preliminary experiment results
 
+A recorded batch evaluated **20 seeds, from 42 through 61**.
 
-\## Installation
+| Result | Observation |
+|---|---:|
+| Scenarios attempted | 20 |
+| Successful journeys | 15 |
+| Scenarios with no initial path | 5 |
+| Overall success rate | 75% |
+| Detected collisions among completed simulations | 0 |
 
+The five unsuccessful cases had no initial route through their generated static grids. They should not be interpreted as failures caused by the moving obstacle. In the 15 cases that completed, the simulation reported zero collisions under its own grid checks.
 
+These are **preliminary observations from one batch**, not a general performance guarantee or a comparison proving superiority over another planner. The simulation uses known grid occupancy, and the obstacle-update logic only accepts positions that preserve the possibility of reaching the goal. The results therefore do not establish safety under arbitrary obstacle motion, imperfect perception, or real flight conditions.
 
-Python 3.13 was used during development. From the project directory, create and activate a virtual environment.
+**Timing methodology:** The reported planning-time fields include the explicitly timed initial and per-step A* calls. Auxiliary A* calls used to screen candidate obstacle locations and prepare the final visualization are not included. Timing is machine-dependent and should not be interpreted as a flight-control deadline guarantee.
 
+## Getting started
 
+### Requirements
 
-Windows Command Prompt:
+- Python 3.13 was used during development.
+- NumPy
+- Matplotlib
+- pytest (for tests)
 
+### Install
 
+In Windows Command Prompt:
 
 ```cmd
-
+git clone https://github.com/Md-sakibur/uav-dynamic-path-planning.git
+cd uav-dynamic-path-planning
 py -m venv .venv
-
-.venv\\Scripts\\activate.bat
-
+.venv\Scripts\activate.bat
 python -m pip install -r requirements.txt
-
 ```
 
-
-
-\## Run the Simulation
-
-
-
-Run the default dynamic-obstacle demonstration:
-
-
+### Run the simulation
 
 ```cmd
-
 python main.py
-
 ```
-
-
 
 Alternatively:
 
-
-
 ```cmd
-
 python -m src.simulation
-
 ```
 
+The program prints performance metrics and saves the visualization to `results/dynamic_replanning.png`.
 
-
-The simulation generates a grid, calculates an initial route, updates the moving obstacle, and repeatedly replans using A\*. It displays and saves the final visualization to `results/dynamic\_replanning.png`.
-
-
-
-\## Run the Experiments
-
-
-
-Execute:
-
-
+### Run the batch experiments
 
 ```cmd
-
-python -m experiments.run\_experiments
-
+python -m experiments.run_experiments
 ```
 
+The runner evaluates seeds 42 through 61 and regenerates the CSV file and charts in `results/`.
 
-
-The batch runner evaluates 20 random seeds, from 42 through 61, and generates:
-
-
-
-\- `results/experiment\_results.csv`
-
-\- `results/experiment\_success.png`
-
-\- `results/experiment\_path\_length.png`
-
-\- `results/experiment\_planning\_time.png`
-
-
-
-Scenarios without an initial path are retained as unsuccessful attempts in the experiment results.
-
-
-
-\## Run the Tests
-
-
-
-Execute:
-
-
+### Run the test suite
 
 ```cmd
-
 python -m pytest -v
-
 ```
 
-
-
-The current automated test suite contains six tests covering the A\* heuristic, neighbor boundaries, path validity, unreachable goals, metric calculations, and one dynamic-simulation scenario.
-
-
-
-\## Preliminary Experiment Results
-
-
-
-In one reported batch of 20 seeds (42–61):
-
-
-
-| Result | Observation |
-
-|---|---:|
-
-| Scenarios attempted | 20 |
-
-| Successful journeys | 15 |
-
-| Scenarios with no initial path | 5 |
-
-| Overall success rate | 75% |
-
-| Detected collisions in completed runs | 0 |
-
-
-
-These are preliminary results from the current simulator, not a general performance guarantee.
-
-
-
-The five unsuccessful scenarios did not have an initial route through their static grid maps. This is distinct from a failure caused by a moving obstacle.
-
-
-
-The simulator uses known grid occupancy and selects obstacle updates that preserve the possibility of reaching the goal. Consequently, the reported zero collision count does not establish collision avoidance under arbitrary obstacle motion, imperfect sensing, or real-world flight conditions.
-
-
-
-Planning times are machine-dependent and should be interpreted as measurements of this implementation, not as a real-time flight-performance guarantee.
-
-
-
-\## Current Limitations
-
-
-
-\- The environment is two-dimensional and grid-based.
-
-\- Only four-directional movements are supported.
-
-\- A\* uses known obstacle occupancy rather than sensor-derived observations.
-
-\- The moving obstacle follows a simplified, deterministic update rule.
-
-\- The obstacle update logic avoids choices that make the goal unreachable.
-
-\- There is no explicit obstacle-tracking or motion-prediction model.
-
-\- The simulator does not model UAV dynamics, flight constraints, or sensor noise.
-
-\- No physical drone experiments have been performed.
-
-
-
-\## Future Work
-
-
-
-Potential research extensions include:
-
-
-
-1\. Compare A\* with other path-planning baselines under identical scenarios.
-
-2\. Introduce obstacle-motion uncertainty and imperfect observations.
-
-3\. Add explicit obstacle tracking and short-term motion prediction.
-
-4\. Investigate safer and more responsive replanning strategies.
-
-5\. Study smoother trajectories and realistic UAV motion constraints.
-
-6\. Expand the benchmark and report statistical summaries across more scenarios.
-
-
-
-\## Research Context
-
-
-
-This prototype provides a baseline for further investigation of dynamic UAV navigation. It is intended to support the exploration of tracking-aware path planning and guidance in uncertain environments. Tracking, prediction, and uncertainty-aware planning remain future research tasks rather than implemented features.
-
-
-
-\## Author
-
-
-
-Md-sakibur
-
-
-
+## Repository layout
+
+```text
+uav-dynamic-path-planning/
+├── src/
+│   ├── environment.py          # Seeded grid generation
+│   ├── astar.py                # A* search and heuristic
+│   ├── simulation.py           # Dynamic-obstacle simulation
+│   ├── metrics.py              # Performance calculations
+│   └── visualization.py        # Grid and route plots
+├── tests/
+│   ├── test_astar.py
+│   ├── test_metrics.py
+│   └── test_simulation.py
+├── experiments/
+│   └── run_experiments.py      # Multi-seed batch run
+├── results/                    # Figures and CSV observations
+├── docs/
+│   └── experiment_notes.md
+├── .github/
+│   └── workflows/
+│       └── tests.yml            # Test automation on GitHub
+├── main.py
+├── requirements.txt
+└── README.md
+```
+
+## Limitations
+
+- The map is 2D and grid-based; diagonal moves and continuous coordinates are not modelled.
+- Obstacle positions are known directly by the simulator. There is no sensor model, tracking filter, or motion-prediction component.
+- The moving obstacle follows a simplified, deterministic update rule along positions on the initial route.
+- Candidate obstacle updates are screened to preserve a route to the goal, so the scenario is controlled rather than adversarial.
+- The collision counter reflects the simulator's grid-level checks, not physical collision risk for a UAV.
+- The experiment results do not yet compare multiple planners under a comprehensive, matched protocol.
+- No flight dynamics, wind, battery constraints, sensor noise, or real-drone tests are included.
+
+## Future work
+
+1. Compare A* with Dijkstra or other suitable baselines under the same maps and seeds.
+2. Add explicit obstacle-state tracking and short-horizon motion prediction.
+3. Model uncertain or noisy observations and evaluate robustness.
+4. Investigate replanning strategies with measured trade-offs in path length and computation.
+5. Extend grid paths toward smoother trajectories and UAV motion constraints.
+6. Expand the experiment set and report statistical summaries across repeated trials.
+
+## Related Project
+
+This work builds on my earlier [UAV Path Planning Benchmark](https://github.com/Md-sakibur/uav-path-planning-benchmark), which focused on comparing classical path-planning algorithms in static grid environments. The present repository extends that work toward controlled obstacle changes and repeated path replanning.
+
+## Author
+
+**MD SAKIBUR RAHMAN SAKI**
+
+---
+
+*Research prototype for learning and evaluating grid-based UAV path planning. Results and limitations are reported as implemented; dynamic tracking, uncertainty-aware prediction, and physical UAV validation remain future work.*
