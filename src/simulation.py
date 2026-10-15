@@ -1,4 +1,3 @@
-
 from time import perf_counter
 
 from src.environment import create_grid
@@ -7,7 +6,7 @@ from src.visualization import plot_grid
 from src.metrics import calculate_metrics, print_metrics
 
 
-def run_dynamic_demo(seed=42, max_steps=200):
+def run_dynamic_demo(seed=42, max_steps=200, show_plot=True):
     """Simulate a moving obstacle and repeated path replanning."""
 
     static_grid = create_grid(seed=seed)
@@ -26,7 +25,7 @@ def run_dynamic_demo(seed=42, max_steps=200):
         planning_times_ms.append(elapsed_ms)
         return result
 
-    # Find the initial route.
+    # Find the initial path.
     initial_path = timed_astar(static_grid, start, goal)
 
     if initial_path is None:
@@ -34,8 +33,8 @@ def run_dynamic_demo(seed=42, max_steps=200):
 
     initial_path_length = len(initial_path) - 1
 
-    # Find a route cell that can be blocked without
-    # making the goal unreachable.
+    # Find a path cell we can block without making
+    # the destination unreachable.
     dynamic_obstacle = None
     obstacle_index = None
 
@@ -66,11 +65,12 @@ def run_dynamic_demo(seed=42, max_steps=200):
     success = False
 
     for _ in range(max_steps):
-        # Build the current map with the obstacle's latest position.
+        # Construct the current map with the latest
+        # moving-obstacle position.
         active_grid = static_grid.copy()
         active_grid[dynamic_obstacle] = 1
 
-        # Replan from the UAV's current position.
+        # Plan a route from the UAV's current position.
         path = timed_astar(active_grid, current, goal)
         replanning_count += 1
 
@@ -84,7 +84,7 @@ def run_dynamic_demo(seed=42, max_steps=200):
         if len(path) < 2:
             break
 
-        # Move one cell along the newly calculated route.
+        # Move one cell along the calculated route.
         next_position = path[1]
 
         # Safety check before movement.
@@ -100,8 +100,9 @@ def run_dynamic_demo(seed=42, max_steps=200):
             success = True
             break
 
-        # Move the obstacle forward along the original path.
-        # Reject any position that would make the goal unreachable.
+        # Advance the obstacle along the original path.
+        # Only choose a position that preserves a possible
+        # route from the UAV's current position to the goal.
         new_obstacle = None
         new_index = None
 
@@ -111,7 +112,8 @@ def run_dynamic_demo(seed=42, max_steps=200):
         ):
             candidate = initial_path[index]
 
-            # The obstacle must not occupy the UAV's visited cells.
+            # Do not place the obstacle on the UAV's
+            # already visited cells or on the goal.
             if candidate in visited or candidate == goal:
                 continue
 
@@ -128,7 +130,7 @@ def run_dynamic_demo(seed=42, max_steps=200):
             obstacle_index = new_index
             dynamic_obstacle_moves += 1
 
-    # Draw the flown route and the remaining planned route.
+    # Prepare the final grid and remaining planned path.
     final_grid = static_grid.copy()
     final_grid[dynamic_obstacle] = 1
 
@@ -143,6 +145,7 @@ def run_dynamic_demo(seed=42, max_steps=200):
         display_path,
         save_path="results/dynamic_replanning.png",
         dynamic_obstacle=dynamic_obstacle,
+        show=show_plot,
     )
 
     metrics = calculate_metrics(

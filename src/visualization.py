@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 
 
@@ -7,15 +6,16 @@ def plot_grid(
     path=None,
     save_path="results/environment.png",
     dynamic_obstacle=None,
+    show=True,
 ):
-    """Display and save the grid, path, and moving obstacle."""
+    """Display and save the grid, route, and moving obstacle."""
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
     # Display free cells and static obstacles.
     ax.imshow(grid, cmap="Greys", vmin=0, vmax=1)
 
-    # Draw the UAV's planned or executed path.
+    # Draw the UAV's route.
     if path:
         path_rows = [point[0] for point in path]
         path_cols = [point[1] for point in path]
@@ -31,7 +31,7 @@ def plot_grid(
             zorder=2,
         )
 
-    # Highlight the dynamic obstacle with an orange X.
+    # Mark the moving obstacle.
     if dynamic_obstacle is not None:
         row, col = dynamic_obstacle
 
@@ -46,7 +46,7 @@ def plot_grid(
             zorder=4,
         )
 
-    # Mark the UAV's starting position.
+    # Mark the start.
     ax.scatter(
         0,
         0,
@@ -57,7 +57,7 @@ def plot_grid(
         zorder=3,
     )
 
-    # Mark the destination.
+    # Mark the goal.
     goal_x = grid.shape[1] - 1
     goal_y = grid.shape[0] - 1
 
@@ -82,7 +82,10 @@ def plot_grid(
     ax.legend()
     plt.tight_layout()
 
-    # Save the visualization before displaying it.
+    # Save the image before displaying it.
     fig.savefig(save_path, dpi=200, bbox_inches="tight")
-    plt.show()
+
+    if show:
+        plt.show()
+
     plt.close(fig)

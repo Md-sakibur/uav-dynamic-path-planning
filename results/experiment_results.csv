@@ -1,0 +1,21 @@
+seed,success,initial_path_length,path_length,planning_calls,total_planning_time_ms,average_planning_time_ms,replanning_count,collision_count,dynamic_obstacle_moves,error
+42,True,38,40,41,3.735,0.091,40,0,34,
+43,False,,,,,,,,,No initial path exists.
+44,True,38,40,41,4.677,0.114,40,0,34,
+45,True,38,42,43,5.111,0.119,42,0,34,
+46,True,38,40,41,5.848,0.143,40,0,29,
+47,True,38,48,49,5.825,0.119,48,0,32,
+48,True,38,46,47,6.533,0.139,46,0,34,
+49,True,38,44,45,5.503,0.122,44,0,33,
+50,False,,,,,,,,,No initial path exists.
+51,False,,,,,,,,,No initial path exists.
+52,True,38,40,41,5.168,0.126,40,0,34,
+53,False,,,,,,,,,No initial path exists.
+54,True,38,38,39,5.143,0.132,38,0,34,
+55,True,38,38,39,4.724,0.121,38,0,29,
+56,True,38,42,43,5.266,0.122,42,0,32,
+57,True,38,40,41,4.672,0.114,40,0,34,
+58,True,38,40,41,5.502,0.134,40,0,34,
+59,False,,,,,,,,,No initial path exists.
+60,True,38,40,41,5.778,0.141,40,0,33,
+61,True,38,42,43,5.058,0.118,42,0,34,
